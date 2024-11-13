@@ -105,7 +105,7 @@ const Body = () => {
       {/* Filtering the Restaurants */}
       <div className="reslist-header mb-5">
         <h2 className="font-bold text-3xl mt-5 p-4 ml-5 md:text-lg">
-          Restaurants with online food delivery in Central Goa
+        Your next meal is just a search away!
         </h2>
       </div>
       {/* filtering restaurants based on ratings */}
@@ -238,9 +238,7 @@ const Body = () => {
       </div>
       </div>
 
-    <div className="responsive-search" >
-    <SearchBar onSearch={handleSearch} />
-    </div>
+    
     {
   filteredRestaurants.length === 0 ? (
     <div className="flex justify-center items-center">
