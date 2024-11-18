@@ -64,7 +64,7 @@ const Instamart = () => {
       <Section
         title={"Can I customize my order?"}
         description={
-          "Yes, YumBite allows you to customize your order based on your preferences. You can add special instructions, modify ingredients, or select add-ons while placing your order."
+          "Yes, QuickBite allows you to customize your order based on your preferences. You can add special instructions, modify ingredients, or select add-ons while placing your order."
         }
         isVisible={visibleSection === "Can I customize my order?"}
         setIsVisible={setIsVisibleSection}

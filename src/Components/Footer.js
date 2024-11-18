@@ -54,7 +54,7 @@ const Footer = () => {
               </li>
               <li>
                 <a href="#" className="hover:text-gray-800">
-                  YumBites Pro
+                  QuickBites Pro
                 </a>
               </li>
             </ul>
