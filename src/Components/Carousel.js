@@ -4,19 +4,13 @@ import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import CarouselBtn from "./CarouselBtn";
 
 const Carousel = ({ carouselCards }) => {
+  // Initialize hooks at the top level
   const carousel = useRef(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [maxIndex, setMaxIndex] = useState(0);
 
-  // Calculate maxIndex based on carousel width and item width
-  useEffect(() => {
-    if (carousel.current && carouselCards && Array.isArray(carouselCards)) {
-      const itemWidth = carousel.current.children[0]?.offsetWidth || 1;
-      setMaxIndex(
-        Math.floor((carousel.current.scrollWidth - carousel.current.offsetWidth) / itemWidth)
-      );
-    }
-  }, [carouselCards]);
+  // Handle edge case: empty or invalid `carouselCards`
+  const isValidCarousel = carouselCards && Array.isArray(carouselCards);
 
   const movePrev = () => {
     if (currentIndex > 0) {
@@ -25,19 +19,26 @@ const Carousel = ({ carouselCards }) => {
   };
 
   const moveNext = () => {
-    if (currentIndex < maxIndex) {
-      setCurrentIndex((prevIndex) => prevIndex + 1);
+    if (carousel.current) {
+      const calculatedMaxIndex =
+        Math.floor(carousel.current.scrollWidth / carousel.current.offsetWidth) -
+        1;
+      setMaxIndex(calculatedMaxIndex);
+
+      if (currentIndex < calculatedMaxIndex) {
+        setCurrentIndex((prevIndex) => prevIndex + 1);
+      }
     }
   };
 
-  // Scroll to the current index position when it changes
   useEffect(() => {
     if (carousel.current) {
-      carousel.current.scrollLeft = carousel.current.children[0]?.offsetWidth * currentIndex;
+      carousel.current.scrollLeft = carousel.current.offsetWidth * currentIndex;
     }
   }, [currentIndex]);
 
-  if (!carouselCards || !Array.isArray(carouselCards)) return null;
+  // Return null for invalid or empty carouselCards
+  if (!isValidCarousel) return null;
 
   return (
     <div className="w-11/12 h-64 md:h-48 flex flex-col mt-10 md:mt-5">

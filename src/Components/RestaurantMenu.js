@@ -1,131 +1,115 @@
-import { useSelector } from "react-redux";
-import { useParams } from "react-router-dom"; // import useParams for read `resId`
+import { useSelector, useDispatch } from "react-redux";
+import { useParams } from "react-router-dom";
 import VegNonVeg from '../Utils/VegNonVeg';
 import {
   ITEM_IMG_CDN_URL,
   swiggy_menu_api_URL,
   MENU_ITEM_TYPE_KEY,
   RESTAURANT_TYPE_KEY,
-} from "../Constant"
-import ResMenuHeader from "./resMenuHeader"
+} from "../Constant";
+import ResMenuHeader from "./resMenuHeader";
 import Shimmer from "./Shimmer";
 import useResMenuData from "../CustomHooks/useResMenuData";
 import { addItem, removeItem } from '../Utils/cartSlice';
-import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 
-
-const RestaurantMenu = ({ itemAttribute }) => {
-  const { resId } = useParams(); // call useParams and get value of restaurant id using object destructuring
-
+const RestaurantMenu = () => {
+  const { resId } = useParams();
   const [restaurant, menuItems] = useResMenuData(
     swiggy_menu_api_URL,
     resId,
     RESTAURANT_TYPE_KEY,
     MENU_ITEM_TYPE_KEY
   );
-  const vegClassifierValue = itemAttribute && itemAttribute.vegClassifier;
-
+  
   const dispatch = useDispatch();
-
-  const addFoodItem = (item) => {
-    dispatch(addItem(item));
-  };
-
-  const removeFoodItem = (itemId) => {
-    dispatch(removeItem(itemId)); // Dispatch the removeItem action with the itemId
-  };
-
   const cartItems = useSelector((store) => store.cart.items);
-  const itemInCart = (itemId) => {
-    // Check if any item in the cart matches the current menu item's id
-    return cartItems.some((item) => item.id === itemId);
+
+  // Function to check if an item is in the cart
+  const isItemInCart = (itemId) => cartItems.some((cartItem) => cartItem.id === itemId);
+
+  // Toggle function for Add/Remove
+  const handleToggleCart = (item) => {
+    if (isItemInCart(item.id)) {
+      dispatch(removeItem(item.id));
+      toast.error(`${item.name} removed from cart`);
+    } else {
+      dispatch(addItem(item));
+      toast.success(`${item.name} added to cart`);
+    }
   };
 
   return !restaurant ? (
     <Shimmer />
   ) : (
-    <div className="restaurant-menu ">
-      {/* restaurant summary details  */}
-       <div className="flex justify-center  w-[80%] md:w-auto mt-3 pl-4  md:pl-0 md:m-auto md:mt-4">
+    <div className="restaurant-menu">
+      {/* Restaurant Header */}
+      <div className="flex justify-center w-[80%] md:w-auto mt-3 pl-4 md:pl-0 md:m-auto md:mt-4">
         <ResMenuHeader restaurant={restaurant} />
       </div>
 
-      {/* Restaurant menu details */}
-      <div className="restaurant-menu-content flex justify-center mb-16 md:flex-col">
-        <div className="menu-items-container mt-8 w-[80%] md:w-full">
-          <div className="menu-title-wrap p-5">
-            <h3 className="menu-title text-xl font-bold">All Items</h3>
-            <p className="menu-count font-semibold text-gray-400 ">
-              {menuItems.length} ITEMS
-            </p>
-          </div>
-          <div
-            className="menu-items-list flex flex-col justify-center divide-y-4  divide-solid divide-orange-200"
-            data-testid="menuItems"
-          >
-            {menuItems.map((item) => (
-              <div
-                className="menu-item flex justify-between  semimd:flex-col p-5 semimd:p-8"
-                key={item?.id}
-              >
-                <div className="menu-item-details flex  flex-col overflow-hidden h-auto self-start">
-                  <VegNonVeg itemAttribute={item?.itemAttribute} />
+      {/* Menu Items Container */}
+      <div className="menu-items-container mt-8 w-[90%] mx-auto mb-16">
+        <div className="menu-title-wrap p-5 text-center">
+          <h3 className="text-2xl font-bold">Choose Your Food</h3>
+          <p className="text-gray-500">{menuItems.length} ITEMS</p>
+        </div>
 
-                  <h3 className="item-title w-auto text-[#333] font-bold pt-2 text-lg">
-                    {item?.name}{" "}
-                  </h3>
-                  <p className="item-cost mt-1">
-                    {item?.price > 0
+        {/* Grid for Menu Items */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {menuItems.map((item) => {
+            const inCart = isItemInCart(item.id);
+
+            return (
+              <div
+                key={item.id}
+                className="menu-card bg-white shadow-lg rounded-lg overflow-hidden flex flex-col"
+              >
+                {/* Item Image */}
+                {item.imageId && (
+                  <img
+                    src={ITEM_IMG_CDN_URL + item.imageId}
+                    alt={item.name}
+                    className="w-full h-40 object-cover"
+                  />
+                )}
+
+                {/* Item Details */}
+                <div className="p-4 flex-grow flex flex-col justify-between">
+                  {/* Veg/Non-Veg Icon */}
+                  <div className="flex items-center mb-2">
+                    <VegNonVeg itemAttribute={item.itemAttribute} />
+                    <h3 className="ml-2 font-bold text-lg text-gray-800">{item.name}</h3>
+                  </div>
+
+                  {/* Item Price */}
+                  <p className="text-green-700">
+                    {item.price > 0
                       ? new Intl.NumberFormat("en-IN", {
                           style: "currency",
                           currency: "INR",
-                        }).format(item?.price / 100)
-                      : " "}
+                        }).format(item.price / 100)
+                      : "Price not available"}
                   </p>
-                  <p className="item-desc mt-3 semimd:mt-1 semimd:mb-3 semimd:w-[70%] leading-6 text-gray-500 text-sm ">
-                    {item?.description}
+
+                  {/* Item Description */}
+                  <p className="text-gray-600 text-sm mt-1 line-clamp-2">
+                    {item.description ? item.description : "No description available"}
                   </p>
-                </div>
 
-                {/* menu-item image */}
-                <div className="menu-img-wrapper flex flex-col justify-center  items-end semimd:items-start w-1/3 semimd:w-3/4 overflow-hidden h-auto">
-                  {item?.imageId && (
-                    <img
-                      className="menu-item-img h-24 w-24 border rounded-md"
-                      src={ITEM_IMG_CDN_URL + item?.imageId}
-                      alt={item?.name}
-                    />
-                  )}
-
-                  {itemInCart(item.id) ? (
-                    <button
-                      className="p-2  m-2  bg-red-200 hover:bg-red-600 rounded-lg border-none font-semibold text-sm cursor-pointer md:text-xs"
-                      onClick={() => {
-                        removeFoodItem(item.id)
-                        toast.error("Item removed from cart");
-                      }}
-                    >
-                      REMOVE -
-                    </button>
-                  ) : (
-                    <button
-                      data-testid="add-btn"
-                      className="p-2 m-2 mr-4 bg-green-200 hover:bg-green-600 rounded-lg border-none font-semibold  text-sm cursor-pointer md:text-xs"
-                      onClick={() => {
-                        addFoodItem(item)
-                        toast.success("Item added to cart");
-                      }}
-                    >
-                      ADD +
-                    </button>
-                     
-
-                  )}
+                  {/* Add/Remove Button */}
+                  <button
+                    className={`mt-4 py-2 px-4 rounded w-20 font-semibold text-white transition duration-300 ${
+                      inCart ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'
+                    }`}
+                    onClick={() => handleToggleCart(item)}
+                  >
+                    {inCart ? 'Remove -' : 'Add +'}
+                  </button>
                 </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
       </div>
     </div>

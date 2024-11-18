@@ -15,6 +15,8 @@ import store from './Utils/Store';
 import UserContext from './Utils/UserContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Checkout from './Components/Cheackout';
+import OrderPlaced from './Components/OrderPlaced';
 
 // Lazy loading components
 const Instamart = lazy(() => import("./Components/Instamart"));
@@ -59,7 +61,7 @@ const appRouter = createBrowserRouter([
         children: [
             {
                 path: "/",
-                element: <Body />,
+                element: <Body    />,
             },
             {
                 path: "/about",
@@ -87,6 +89,14 @@ const appRouter = createBrowserRouter([
                 path: "/cart",
                 element: <Cart />,
             },
+
+            { path: "/checkout",
+             element: <Checkout /> 
+            }, 
+            {
+                path: "/order-placed",
+                element: <OrderPlaced />,
+              },
             {
                 path: "/instamart",
                 element: (

@@ -1,33 +1,66 @@
 import { useContext } from 'react';
 import { IMG_CDN_URL } from '../Constant';
-import 'react-loading-skeleton/dist/skeleton.css'
-import UserContext from '../Utils/UserContext'
+import 'react-loading-skeleton/dist/skeleton.css';
+import UserContext from '../Utils/UserContext';
+import { StarIcon } from '@heroicons/react/24/solid';
+
 
 const RestaurantCard = ({
-  name, avgRating, cuisines, // this are props
+  name, avgRating, cuisines,
   cloudinaryImageId,
   locality,
-    sla // This is the entire 'sla' object
+  sla,
+  costForTwo,
+  offer
 }) => {
-  const { user} = useContext(UserContext);
-    const {deliveryTime} = sla; // Accessing nested loop
-  return (
-    <div className="card w-[235px] h-[300px] md:h-[315px] bg-[#FBF0C0] rounded-lg z-10 m-3 shadow-xl ">
-      < img src={IMG_CDN_URL + cloudinaryImageId} className='w-full h-[155px] rounded-t-xl ' />
-      <div className="card-content px-2">
-        <h2 className="RestaurantName font-bold md:font-medium text-[0.9rem] md:text-base pb-1 text-center">{name}</h2>
-        <h4 className='font-semibold'> <i className="fa-solid fa-star bg-green-600 text-xs p-1  mb-1 mr-1 text-[#fff] rounded-[50%]"></i> {avgRating}</h4>
+  const { user } = useContext(UserContext);
+  const { deliveryTime } = sla;
 
-        <div className="sub-content">
-          <p>{locality} </p>
-          <h4 className=" text-sm">{deliveryTime} mins </h4>
-          <p className="cuisines text-sm font-medium">{cuisines.slice(0, 4).join(", ")}</p>
+  return (
+    <div className="card w-[280px] h-[380px] bg-white rounded-lg shadow-md m-3 overflow-hidden relative border border-gray-200 hover:shadow-lg transition-shadow">
+      {/* Image */}
+      <div className="relative">
+        <img
+          src={IMG_CDN_URL + cloudinaryImageId}
+          alt={name}
+          className="w-full h-[160px] object-cover"
+        />
+        {offer && (
+          <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded">
+            {offer}
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="px-4 py-3">
+        {/* Restaurant Name */}
+        <h2 className="font-bold text-lg truncate">{name}</h2>
+
+        {/* Rating with Icon */}
+        <div className="flex items-center gap-2 mt-2">
+  <StarIcon className="h-5 w-5 text-yellow-500" />
+  <span className="text-gray-800 font-medium text-sm">{avgRating}</span>
+</div>
+
+        {/* Locality and Delivery Time */}
+        <div className="flex justify-between items-center text-sm text-gray-600 mt-2">
+          <p className="truncate">{locality}</p>
+          <span>{deliveryTime} mins</span>
+        </div>
+
+        {/* Cuisines */}
+        <p className="mt-2 text-sm text-gray-700 truncate">
+          {cuisines.slice(0, 4).join(", ")}
+        </p>
+
+        {/* Cost for Two */}
+        <div className="text-sm text-gray-800 font-medium mt-2">
+          ₹{costForTwo} for two
         </div>
       </div>
     </div>
-    
   );
-
-}
+};
 
 export default RestaurantCard;

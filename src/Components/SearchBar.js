@@ -26,7 +26,7 @@ const SearchBar = ({ onSearch }) => {
       />
       <button
         data-testid="search-btn"
-        className="search-button bg-amber-200 text-md font-medium  p-2  my-2 rounded-lg text-[#333] ml-2"
+        className="search-button bg-red-400 text-md font-medium  p-2  my-2 rounded-lg text-[#333] ml-2"
         onClick={handleSearchClick}
       >
         Search

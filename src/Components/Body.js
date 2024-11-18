@@ -1,10 +1,11 @@
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import RestaurantCard from "./RestaurantCard";
-import { useState, useEffect } from "react";
 import Shimmer from "./Shimmer";
 import SearchBar from "./SearchBar";
-
-import "react-loading-skeleton/dist/skeleton.css";
-import { Link } from "react-router-dom";
+import Carousel from "./Carousel";
+import HeroSection from "./Herosection";
+import useOnline from "../CustomHooks/useOnline";
 import {
   filterData,
   ratingFilter,
@@ -13,112 +14,82 @@ import {
   filterMidPrice,
   filterPureVeg,
 } from "../Utils/FilterRestaurant";
-import Carousel from "./Carousal";
-
-import useOnline from "../CustomHooks/useOnline";
 import { swiggy_restaurant_details } from "../Constant";
 
 const Body = () => {
-
-   //  function to handle search
-   const handleSearch = (searchText) => {
-    const data = filterData(searchText, allRestaurants);
-    setFilteredRestaurants(data);
-  };
- 
   const [carouselCards, setCarouselCards] = useState([]);
   const [allRestaurants, setAllRestaurants] = useState([]);
   const [filteredRestaurants, setFilteredRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState([]);
 
-  //filtering the restaurant
   const [isRatingFiltered, setIsRatingFiltered] = useState(false);
   const [isFastDeliveryFiltered, setIsFastDeliveryFiltered] = useState(false);
   const [isLowPriceFiltered, setIsLowPriceFiltered] = useState(false);
   const [isMidPriceFiltered, setIsMidPriceFiltered] = useState(false);
   const [isPureVegFiltered, setIsPureVegFiltered] = useState(false);
 
+  // Fetching restaurants data
   useEffect(() => {
-    //callback fn will be called once after the render()
-    //Api call
-    getRestaurants(); //sideffect:api calling
+    getRestaurants();
   }, []);
+
   async function getRestaurants() {
     try {
       const data = await fetch(swiggy_restaurant_details);
       const json = await data.json();
 
-      // initialize checkJsonData() function to check Swiggy Restaurant data
-      async function checkJsonData(jsonData) {
-        for (let i = 0; i < jsonData?.data?.cards.length; i++) {
-          // initialize checkData for Swiggy Restaurant data i=5
-          let checkData =
-            json?.data?.cards[i]?.card?.card?.gridElements?.infoWithStyle
-              ?.restaurants;
-          console.log(checkData);
-          // if checkData is not undefined then return it
-          if (checkData !== undefined) {
-            return checkData;
-          }
-        }
-      }
+      const resData = json?.data?.cards
+        .map((card) => card?.card?.card?.gridElements?.infoWithStyle?.restaurants)
+        .find((item) => item !== undefined);
 
-      // call the checkJsonData() function which return Swiggy Restaurant data
-      const resData = await checkJsonData(json);
-      setAllRestaurants(resData); //initially show all restaurant on load
-      setFilteredRestaurants(resData); //show only filtered restaurant search by the user
-      setLoading(false);
+      setAllRestaurants(resData || []);
+      setFilteredRestaurants(resData || []);
       setCarouselCards(
         json?.data?.cards[0]?.card?.card?.gridElements?.infoWithStyle?.info
       );
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching restaurant data:", error);
     }
   }
 
-  //Checking if user is online or offline
+  // Check if the user is online
   const isOnline = useOnline();
-
   if (!isOnline) {
     return (
-      <h1>🔴Oops!! Seems like your offline, Please Check Your Internet🔴</h1>
+      <h1>🔴 Oops! Seems like you’re offline. Please check your internet connection. 🔴</h1>
     );
   }
-  // if not rendered properly this is called: Early return
-  if (!allRestaurants) return null;
-  // use searchData function and set condition if data is empty show error message
-  // if(filteredRestaurants?.length === 0) return <h1>Sorry! No Restaurant Found</h1>
 
-  //Conditional Rendering
-  //if restaurant is empty => shimmer UI
-  // else restaurant has data => actual
+  // Handle search functionality
+  const handleSearch = (searchText) => {
+    const data = filterData(searchText, allRestaurants);
+    setFilteredRestaurants(data);
+  };
 
   if (loading) return <Shimmer cards={20} />;
+
   return (
     <>
-      <Carousel carouselCards={carouselCards} /> {/*item carouselCards */}
+      <HeroSection />
+      <Carousel carouselCards={carouselCards} />
       <div className="divider">
-        <hr className=" border-[1px] bg-[rgb(240, 240, 245)] m-5 sm:m-2"></hr>
+        <hr className="border-[1px] bg-[rgb(240, 240, 245)] m-5 sm:m-2"></hr>
       </div>
 
-      {/* Filtering the Restaurants */}
-      <div className="reslist-header mb-5">
-        <h2 className="font-bold text-3xl mt-5 p-4 ml-5 md:text-lg">
-        Your next meal is just a search away!
-        </h2>
-      </div>
-      {/* filtering restaurants based on ratings */}
-      <div className=" w-full md:filter-buttons-container  overflow-x-auto whitespace-nowrap ">
-
-      <div className="filter-buttons   flex items-center ml-[2rem]">
-        <div className="rating-button mr-4">
+      {/* Filter Section */}
+      <div className="filter-section bg-gray-100 p-4 rounded-lg shadow-md mx-4 my-6">
+        <h3 className="text-xl font-bold text-center mb-4">Filter Restaurants</h3>
+        <div className="flex flex-wrap justify-center gap-4">
+          {/* Rating Filter */}
           <button
-            className={`p-2   border border-black rounded-3xl border-opacity-30 cursor-pointer md:text-sm md:p-3
-                    ${isRatingFiltered ? "bg-[#A84908] text-white" : ""}`}
+            className={`filter-btn px-4 py-2 rounded-full shadow-md transition-all transform hover:scale-105 ${
+              isRatingFiltered
+                ? "bg-orange-500 text-white"
+                : "bg-white border border-orange-500 text-orange-500"
+            }`}
             onClick={() => {
               if (isRatingFiltered) {
-                // If the filter is already applied, clear it by setting the original list of restaurants
                 setFilteredRestaurants(allRestaurants);
                 setIsRatingFiltered(false);
               } else {
@@ -128,21 +99,18 @@ const Body = () => {
             }}
           >
             Ratings 4.3+
-            {isRatingFiltered && (
-              <span className=" ml-3 p-2 pl-0 size-9 text-xl font-medium">
-                x
-              </span>
-            )}
+            {isRatingFiltered && <span className="ml-2 text-sm">&#10005;</span>}
           </button>
-        </div>
 
-        <div className="fastdelivery-button mr-4">
+          {/* Fast Delivery Filter */}
           <button
-            className={`p-2  border border-black rounded-3xl border-opacity-30 cursor-pointer md:text-sm md:p-3
-                    ${isFastDeliveryFiltered ? "bg-[#A84908] text-white" : ""}`}
+            className={`filter-btn px-4 py-2 rounded-full shadow-md transition-all transform hover:scale-105 ${
+              isFastDeliveryFiltered
+                ? "bg-green-500 text-white"
+                : "bg-white border border-green-500 text-green-500"
+            }`}
             onClick={() => {
               if (isFastDeliveryFiltered) {
-                // If the filter is already applied, clear it by setting the original list of restaurants
                 setFilteredRestaurants(allRestaurants);
                 setIsFastDeliveryFiltered(false);
               } else {
@@ -152,21 +120,18 @@ const Body = () => {
             }}
           >
             Fast Delivery
-            {isFastDeliveryFiltered && (
-              <span className=" ml-3 p-2 pl-0 size-9 text-xl font-medium">
-                x
-              </span>
-            )}
+            {isFastDeliveryFiltered && <span className="ml-2 text-sm">&#10005;</span>}
           </button>
-        </div>
 
-        <div className="pureVeg-button mr-4">
+          {/* Pure Veg Filter */}
           <button
-            className={`p-2 border  border-black rounded-3xl border-opacity-30 cursor-pointer md:text-sm md:p-3 
-                    ${isPureVegFiltered ? "bg-[#A84908] text-white" : ""}`}
+            className={`filter-btn px-4 py-2 rounded-full shadow-md transition-all transform hover:scale-105 ${
+              isPureVegFiltered
+                ? "bg-green-700 text-white"
+                : "bg-white border border-green-700 text-green-700"
+            }`}
             onClick={() => {
               if (isPureVegFiltered) {
-                // If the filter is already applied, clear it by setting the original list of restaurants
                 setFilteredRestaurants(allRestaurants);
                 setIsPureVegFiltered(false);
               } else {
@@ -176,21 +141,18 @@ const Body = () => {
             }}
           >
             Pure Veg
-            {isPureVegFiltered && (
-              <span className=" ml-3 p-2 pl-0 size-9 text-xl font-medium">
-                x
-              </span>
-            )}
+            {isPureVegFiltered && <span className="ml-2 text-sm">&#10005;</span>}
           </button>
-        </div>
 
-        <div className="lowPrice-button mr-4">
+          {/* Low Price Filter */}
           <button
-            className={`p-2  border  border-black rounded-3xl border-opacity-30 cursor-pointer md:text-sm md:p-3 
-                    ${isLowPriceFiltered ? "bg-[#A84908] text-white" : ""}`}
+            className={`filter-btn px-4 py-2 rounded-full shadow-md transition-all transform hover:scale-105 ${
+              isLowPriceFiltered
+                ? "bg-blue-500 text-white"
+                : "bg-white border border-blue-500 text-blue-500"
+            }`}
             onClick={() => {
               if (isLowPriceFiltered) {
-                // If the filter is already applied, clear it by setting the original list of restaurants
                 setFilteredRestaurants(allRestaurants);
                 setIsLowPriceFiltered(false);
               } else {
@@ -199,21 +161,19 @@ const Body = () => {
               }
             }}
           >
-            Less than Rs.300
-            {isLowPriceFiltered && (
-              <span className=" ml-3 p-2 pl-0 size-9 text-xl font-medium">
-                x
-              </span>
-            )}
+            Less than ₹300
+            {isLowPriceFiltered && <span className="ml-2 text-sm">&#10005;</span>}
           </button>
-        </div>
-        <div className="midPrice-button mr-4">
+
+          {/* Mid Price Filter */}
           <button
-            className={`p-2  border border-black rounded-3xl border-opacity-30 cursor-pointer md:text-sm md:p-3
-                    ${isMidPriceFiltered ? "bg-[#A84908] text-white" : ""}`}
+            className={`filter-btn px-4 py-2 rounded-full shadow-md transition-all transform hover:scale-105 ${
+              isMidPriceFiltered
+                ? "bg-purple-500 text-white"
+                : "bg-white border border-purple-500 text-purple-500"
+            }`}
             onClick={() => {
               if (isMidPriceFiltered) {
-                // If the filter is already applied, clear it by setting the original list of restaurants
                 setFilteredRestaurants(allRestaurants);
                 setIsMidPriceFiltered(false);
               } else {
@@ -222,39 +182,38 @@ const Body = () => {
               }
             }}
           >
-            Rs.300 - Rs.600
-            {isMidPriceFiltered && (
-              <span className=" ml-3 p-2 pl-0 size-9 text-xl font-medium">
-                x
-              </span>
-            )}
+            ₹300 - ₹600
+            {isMidPriceFiltered && <span className="ml-2 text-sm">&#10005;</span>}
           </button>
         </div>
 
-        {/* Search bar functionality */}
-        <div className="desktop-search"  >
-        <SearchBar onSearch={handleSearch} />
+        {/* Search Bar */}
+        <div className="mt-4">
+          <SearchBar onSearch={handleSearch} />
         </div>
       </div>
-      </div>
 
-    
-    {
-  filteredRestaurants.length === 0 ? (
-    <div className="flex justify-center items-center">
-
-
-    </div>
-  ) : (
-    <div className="flex flex-wrap justify-center align-middle mb-16 md:mb-24 " data-testid="res-list">
-      {/* Render restaurants here */}
-      {filteredRestaurants.map((eachRestaurant) => (
-        <Link className="restaurantMenu-links" to={"/restaurant/" + eachRestaurant?.info?.id} key={eachRestaurant?.info?.id}>
-          <RestaurantCard {...eachRestaurant?.info} />
-        </Link>
-      ))}
-    </div>
-  )}
+      {/* Restaurant List */}
+      {filteredRestaurants.length === 0 ? (
+        <div className="flex justify-center items-center">
+          <h1 className="text-2xl font-bold">Sorry! No Restaurant Found</h1>
+        </div>
+      ) : (
+        <div
+          className="flex flex-wrap justify-center align-middle mb-16 md:mb-24"
+          data-testid="res-list"
+        >
+          {filteredRestaurants.map((eachRestaurant) => (
+            <Link
+              className="restaurantMenu-links"
+              to={"/restaurant/" + eachRestaurant?.info?.id}
+              key={eachRestaurant?.info?.id}
+            >
+              <RestaurantCard {...eachRestaurant?.info} />
+            </Link>
+          ))}
+        </div>
+      )}
     </>
   );
 };

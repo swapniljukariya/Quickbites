@@ -1,4 +1,6 @@
 import React from "react";
+import vegicon from '.././Components/img/veg-icon.png';
+import nonvegicon from '.././Components/img/non-veg-icon.png';
 
 
 const VegNonVeg = ({ itemAttribute }) => {
@@ -7,9 +9,9 @@ const VegNonVeg = ({ itemAttribute }) => {
   return (
     <div>
       {vegClassifierValue === "VEG" ? (
-        <img src={null} className="w-6 h-6" alt="veg food" />
+        <img src={vegicon} className="w-6 h-6" alt="veg food" />
       ) : (
-        <img src={null} className="w-6 h-6" alt="nonVeg food" />
+        <img src={nonvegicon} className="w-6 h-6" alt="nonVeg food" />
       )}
     </div>
   );

@@ -1,89 +1,172 @@
-import { useDispatch, useSelector } from "react-redux";
-import MenuCart from "./MenuCart";
-
-import { FaLongArrowAltRight } from "react-icons/fa";
-import { GrUndo } from "react-icons/gr";
-import { toast } from "react-toastify";
-import { clearCart } from '../Utils/cartSlice'
+import React, { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import {
+  updateCartItemQuantity,
+  removeItem,
+  clearCart,
+} from "../Utils/cartSlice";
+import { ITEM_IMG_CDN_URL } from "../Constant";
+import emptycart from './img/EmptyCart.png' // Replace with the correct path to your empty cart image
 
 const Cart = () => {
-  const cartItems = useSelector((store) => store.cart.items);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const cartItems = useSelector((store) => store.cart.items);
 
-  // Function to handle clearing the cart
-  const handleClearCart = () => {
-    // Dispatching the clearCart action
-    dispatch(clearCart());
-  };
+  const [isChecked, setIsChecked] = useState(false);
 
-  // Function to calculate total price for a single item
-  const calculateTotalPrice = (item) => {
-    // Check if item has a valid price
-    if (item && typeof item.price === "number" && !isNaN(item.price)) {
-      // If price is valid, calculate total price
-      return item.price * item.quantity;
+  const handleQuantityChange = (itemId, quantity) => {
+    if (quantity > 0) {
+      dispatch(updateCartItemQuantity({ id: itemId, quantity }));
     } else {
-      // If price is not valid, return 0
-      return 0;
+      dispatch(removeItem(itemId));
     }
   };
 
-  // Calculate subtotal for all items in the cart
-  const subTotal = cartItems.reduce((acc, item) => {
-    return acc + calculateTotalPrice(item);
-  }, 0);
+  const handleClearCart = () => {
+    dispatch(clearCart());
+  };
+
+  const handleCheckout = () => {
+    if (!isChecked) {
+      alert("Please check the box to proceed to checkout.");
+      return;
+    }
+    // Navigate to Checkbox.jsx or a related checkout page
+    navigate("/checkout");
+  };
+
+  const totalAmount = cartItems.reduce(
+    (acc, item) => acc + (item.price * item.quantity) / 100,
+    0
+  );
 
   return (
-    <div className="mainContainer ">
-      {/* <h1 className="font-bold text-2xl text-center">Cart Items: {cartItems.length}</h1> */}
-
-      <div className="mainCart flex ">
-        <div className="menuItems pt-5 flex-grow mb-16 md:mb-24">
-        {cartItems.length === 0 ? (
-      
-     <div className='Empty-cart mt-10 flex items-center justify-center flex-col gap-4'>
-     <img className="h-80 md:h-52 sm:h-36 md:mt-20" src={null} alt="CartEmpty" />
-     <p className="text-2xl md:text-base font-bold text-[#e48657]" >Your Cart is Empty !!</p>
-     <a href="/" className="text-xl md:text-base font-bold text-[#e48657] flex items-center hover:text-[#8d4623]  hover:underline">
-  Back to Home <GrUndo className="ml-1 hover:text-[#8d4623]" /></a>
-     </div>
-          ) : (
-            cartItems.map((item,index) => (
-              <MenuCart key={item.id} id={item.id} isFirstItem={index === 0} {...item}  />
-            ))
-          )}
-          <button
-            className="bg-red-400 text-white ml-2 p-2 md:p-1 md:mx-2"
-            onClick={handleClearCart}
+    <div className="container mx-auto p-4">
+      {cartItems.length === 0 ? (
+        <div className="flex flex-col items-center mt-16">
+          <img
+            src={emptycart}
+            alt="Cart is empty"
+            className="w-48 h-48 md:w-72 md:h-72"
+          />
+          <h2 className="text-xl md:text-2xl font-semibold text-gray-700 mt-4">
+            Your Cart is Empty!
+          </h2>
+          <a
+            href="/"
+            className="mt-4 text-lg text-green-600 hover:underline flex items-center"
           >
-            Clear Cart
-          </button>
+            Back to Home
+          </a>
         </div>
-        <div className="totalSummary w-56 md:w-full min-h-[85vh] overflow-hidden flex flex-wrap flex-col  md:justify-center md:align-middle md:flex-row md:min-h-1 md:absolute md:top-18 md:p-5 bg-[#252525] text-white p-3">
-          <span id="title" className="font-bold text-lg  md:text-base pb-3">
-            Subtotal ({cartItems.length}) items
-          </span>
-          <span className="font-bold text-xl md:text-base pb-3 md:px-5">
-            {" "}
-            Total: ₹{subTotal / 100}{" "}
-          </span>
-
-          <div className="pt-10 md:pt-0 float-right md:ml-72 semimd:ml-[2rem] sm:ml-2">
+      ) : (
+        <div>
+          <h2 className="text-center text-2xl md:text-3xl font-bold mb-6">
+            Your Cart
+          </h2>
+          <div className="overflow-x-auto">
+            <table className="w-full table-auto border-collapse">
+              <thead>
+                <tr className="bg-gray-100 border-b">
+                  <th className="p-2 md:p-4 text-left">Image</th>
+                  <th className="p-2 md:p-4 text-left">Item Name</th>
+                  <th className="p-2 md:p-4 text-left">Price</th>
+                  <th className="p-2 md:p-4 text-left">Quantity</th>
+                  <th className="p-2 md:p-4 text-left">Total</th>
+                  <th className="p-2 md:p-4 text-left">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cartItems.map((item) => (
+                  <tr key={item.id} className="border-b">
+                    <td className="p-2 md:p-4">
+                      <img
+                        src={
+                          item.imageId
+                            ? `${ITEM_IMG_CDN_URL}${item.imageId}`
+                            : "/default-image.jpg"
+                        }
+                        alt={item.name}
+                        className="h-12 w-12 md:h-16 md:w-16 rounded-md object-cover"
+                      />
+                    </td>
+                    <td className="p-2 md:p-4">{item.name}</td>
+                    <td className="p-2 md:p-4">
+                      {item.price && !isNaN(item.price)
+                        ? new Intl.NumberFormat("en-IN", {
+                            style: "currency",
+                            currency: "INR",
+                          }).format(item.price / 100)
+                        : "₹0.00"}
+                    </td>
+                    <td className="p-2 md:p-4">
+                      <input
+                        type="number"
+                        value={item.quantity}
+                        min="1"
+                        className="w-12 md:w-16 p-1 md:p-2 border rounded text-center"
+                        onChange={(e) =>
+                          handleQuantityChange(item.id, Number(e.target.value))
+                        }
+                      />
+                    </td>
+                    <td className="p-2 md:p-4">
+                      {item.price && !isNaN(item.price)
+                        ? new Intl.NumberFormat("en-IN", {
+                            style: "currency",
+                            currency: "INR",
+                          }).format((item.price * item.quantity) / 100)
+                        : "₹0.00"}
+                    </td>
+                    <td className="p-2 md:p-4">
+                      <button
+                        onClick={() => dispatch(removeItem(item.id))}
+                        className="px-2 md:px-4 py-1 md:py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                      >
+                        Remove
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="mt-4 flex flex-col md:flex-row justify-between items-center">
+            <div className="font-semibold text-lg">Total Amount</div>
+            <div className="text-lg font-semibold text-green-500">
+              {new Intl.NumberFormat("en-IN", {
+                style: "currency",
+                currency: "INR",
+              }).format(totalAmount)}
+            </div>
+          </div>
+          <div className="mt-6 flex flex-col md:flex-row justify-between items-center gap-4">
             <button
-              type="button"
-              disabled={cartItems.length === 0}
-              className="bg-green-500 hover:bg-green-700 text-white font-bold py-3 md:py-2 px-4 md:px-2 rounded flex items-center "
-              onClick={() =>
-                toast.success("Checked out successfully")
-              }
+              onClick={handleClearCart}
+              className="w-full md:w-auto px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
             >
-              <span className="md:hidden">Proceed to Checkout</span>
-              <span className="hidden md:inline">Checkout</span>
-              <FaLongArrowAltRight className=" hidden md:inline ml-2 " />
+              Clear Cart
             </button>
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                checked={isChecked}
+                onChange={() => setIsChecked(!isChecked)}
+                className="mr-2"
+              />
+              <span>Proceed to Checkout</span>
+              <button
+                onClick={handleCheckout}
+                className="ml-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+              >
+                Checkout
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
