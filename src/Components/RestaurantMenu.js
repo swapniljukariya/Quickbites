@@ -99,12 +99,12 @@ const RestaurantMenu = () => {
 
                   {/* Add/Remove Button */}
                   <button
-                    className={`mt-4 py-2 px-4 rounded w-20 font-semibold text-white transition duration-300 ${
+                    className={`mt-4 py-2 px-4 rounded w-24 font-semibold text-white transition duration-300 ${
                       inCart ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'
                     }`}
                     onClick={() => handleToggleCart(item)}
                   >
-                    {inCart ? 'Remove -' : 'Add +'}
+                    {inCart ? 'Remove-' : 'Add +'}
                   </button>
                 </div>
               </div>

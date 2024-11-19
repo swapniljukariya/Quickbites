@@ -1,9 +1,6 @@
-Here's a more structured and detailed **README.md** template tailored for your **QuickBites** project:
-
----
-
 # QuickBites 🍔🍕  
-**QuickBites** is a modern food ordering web application where users can browse restaurants, filter them based on preferences, and search for their favorite meals. Built using React, it provides a smooth and interactive user experience.
+
+**QuickBites** is a modern food ordering web application where users can browse restaurants, filter them based on preferences, and search for their favorite meals. Built using React, it provides a smooth and interactive user experience. It also includes a **Contact Us** page powered by **EmailJS**, allowing users to send messages without requiring a backend.
 
 ---
 
@@ -29,6 +26,8 @@ Here's a more structured and detailed **README.md** template tailored for your *
    - Combines **Redux** and **Context API** for efficient state handling.
      - **Redux**: For managing global restaurant and filter states.
      - **Context API**: For lightweight and component-specific state management.
+8. **Contact Form**:
+   - Integrated **EmailJS** service for sending messages directly from the app without a backend.
 
 ---
 
@@ -44,10 +43,138 @@ Here's a more structured and detailed **README.md** template tailored for your *
 ### Backend:
 - **Swiggy APIs**: To fetch real-time restaurant data.
 
+### Email Service:
+- **EmailJS**: For sending messages directly from the app without requiring a backend.
+
 ### Development Tools:
 - **CRA**: For faster React builds.
 - **ESLint**: For code linting.
 - **Git/GitHub**: For version control and collaboration.
+
+
+src/
+├── Components/
+├── CustomHooks/
+├── Utils/
+├── App.css
+├── App.test.js
+├── Constant.js
+├── index.css
+├── index.js
+├── logo.svg
+├── reportWebVitals.js
+├── setupTests.js
+├── style.css
+
+
+
+
+
+
+## 📩 Adding EmailJS Integration for Contact Page
+
+### 1. **Install the EmailJS Library**
+Run the following command to install EmailJS:
+
+```bash
+npm install emailjs-com
+```
+
+### 2. **Create a Contact Form**
+Add the following code to `src/pages/Contact.jsx`:
+
+```jsx
+import React, { useRef } from 'react';
+import emailjs from 'emailjs-com';
+
+const Contact = () => {
+  const form = useRef();
+
+  const sendEmail = (e) => {
+    e.preventDefault();
+
+    emailjs
+      .sendForm(
+        'your_service_id',  // Replace with your EmailJS service ID
+        'your_template_id', // Replace with your EmailJS template ID
+        form.current,
+        'your_user_id'      // Replace with your EmailJS public key
+      )
+      .then(
+        (result) => {
+          alert('Message sent successfully!');
+          console.log(result.text);
+        },
+        (error) => {
+          alert('Failed to send message. Please try again later.');
+          console.log(error.text);
+        }
+      );
+
+    e.target.reset();
+  };
+
+  return (
+    <div className="contact-form">
+      <h1>Contact Us</h1>
+      <form ref={form} onSubmit={sendEmail}>
+        <div>
+          <label>Name:</label>
+          <input type="text" name="user_name" required />
+        </div>
+        <div>
+          <label>Email:</label>
+          <input type="email" name="user_email" required />
+        </div>
+        <div>
+          <label>Message:</label>
+          <textarea name="message" required />
+        </div>
+        <button type="submit">Send Message</button>
+      </form>
+    </div>
+  );
+};
+
+export default Contact;
+```
+
+### 3. **EmailJS Configuration**
+1. Go to [EmailJS Dashboard](https://www.emailjs.com/) and:
+   - Create an account.
+   - Set up an email service.
+   - Create an email template.
+
+2. Replace the placeholders in the above code:
+   - `'your_service_id'`: Your service ID from EmailJS.
+   - `'your_template_id'`: Your email template ID.
+   - `'your_user_id'`: Your public key from EmailJS.
+
+### 4. **Add Contact Page to Router**
+Add the `Contact` page route to your `App.js` file:
+
+```jsx
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Home from './pages/Home';
+import Contact from './pages/Contact';
+
+const App = () => {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/contact" element={<Contact />} />
+      </Routes>
+    </Router>
+  );
+};
+
+export default App;
+```
+
+### 5. **Test the Form**
+Navigate to `/contact` in your app, fill out the form, and test the email functionality.
 
 ---
 
@@ -55,7 +182,7 @@ Here's a more structured and detailed **README.md** template tailored for your *
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/Jeniya14/quickbites.git
+   git clone https://github.com/swapniljukariya/Quickbites
    ```
 2. **Navigate to the Project Directory**:
    ```bash
@@ -74,25 +201,6 @@ Here's a more structured and detailed **README.md** template tailored for your *
 
 ---
 
-## 📂 Folder Structure
-
-```plaintext
-quickbites/
-├── public/         # Static assets
-├── src/
-│   ├── Components/ # Reusable React components
-│   ├── Pages/      # Page-level components
-│   ├── Redux/      # Redux slices and store
-│   ├── Context/    # Context API for local state management
-│   ├── Utils/      # Helper functions (e.g., filters)
-│   └── App.js      # Main application component
-├── README.md       # Project documentation
-├── package.json    # Project dependencies
-└── vite.config.js  # Vite configuration
-```
-
----
-
 ## 📈 Future Improvements
 
 1. **User Authentication**:
@@ -106,12 +214,3 @@ quickbites/
 
 ---
 
-
-
-
-
-
-
---- 
-
-Feel free to customize the above template further to match your needs!

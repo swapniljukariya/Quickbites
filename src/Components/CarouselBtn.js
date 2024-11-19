@@ -1,6 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Carousel from "./Carousel";
 
-const CircularBtn = ({ onClick, disabled, icon }) => {
+const CarouselBtn = ({ onClick, disabled, icon }) => {
   return (
     <button
       onClick={onClick}
@@ -12,4 +13,4 @@ const CircularBtn = ({ onClick, disabled, icon }) => {
   );
 };
 
-export default CircularBtn;
+export default CarouselBtn;

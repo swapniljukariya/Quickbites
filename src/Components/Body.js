@@ -79,7 +79,7 @@ const Body = () => {
 
       {/* Filter Section */}
       <div className="filter-section bg-gray-100 p-4 rounded-lg shadow-md mx-4 my-6">
-        <h3 className="text-xl font-bold text-center mb-4">Filter Restaurants</h3>
+        
         <div className="flex flex-wrap justify-center gap-4">
           {/* Rating Filter */}
           <button

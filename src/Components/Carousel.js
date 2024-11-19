@@ -1,76 +1,96 @@
-import React, { useState, useEffect, useRef } from "react";
-import { ITEM_IMG_CDN_URL } from "../Constant";
+import { useRef, useState, useEffect } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons";
-import CarouselBtn from "./CarouselBtn";
+import { ITEM_IMG_CDN_URL } from "../Constant"; // Importing the CDN URL from constants
 
 const Carousel = ({ carouselCards }) => {
-  // Initialize hooks at the top level
-  const carousel = useRef(null);
+  const carouselRef = useRef(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [maxIndex, setMaxIndex] = useState(0);
 
-  // Handle edge case: empty or invalid `carouselCards`
-  const isValidCarousel = carouselCards && Array.isArray(carouselCards);
+  useEffect(() => {
+    // Calculate max index based on the number of visible items
+    if (carouselRef.current) {
+      const visibleWidth = carouselRef.current.offsetWidth;
+      const totalWidth = carouselRef.current.scrollWidth;
+      const itemsPerView = Math.floor(totalWidth / visibleWidth);
+      setMaxIndex(carouselCards.length - itemsPerView);
+    }
+  }, [carouselCards]);
+
+  const scrollToIndex = (index) => {
+    if (carouselRef.current) {
+      const itemWidth = carouselRef.current.offsetWidth;
+      carouselRef.current.scrollTo({
+        left: index * itemWidth,
+        behavior: "smooth",
+      });
+    }
+  };
 
   const movePrev = () => {
     if (currentIndex > 0) {
-      setCurrentIndex((prevIndex) => prevIndex - 1);
+      const newIndex = currentIndex - 1;
+      setCurrentIndex(newIndex);
+      scrollToIndex(newIndex);
     }
   };
 
   const moveNext = () => {
-    if (carousel.current) {
-      const calculatedMaxIndex =
-        Math.floor(carousel.current.scrollWidth / carousel.current.offsetWidth) -
-        1;
-      setMaxIndex(calculatedMaxIndex);
-
-      if (currentIndex < calculatedMaxIndex) {
-        setCurrentIndex((prevIndex) => prevIndex + 1);
-      }
+    if (currentIndex < maxIndex) {
+      const newIndex = currentIndex + 1;
+      setCurrentIndex(newIndex);
+      scrollToIndex(newIndex);
     }
   };
 
-  useEffect(() => {
-    if (carousel.current) {
-      carousel.current.scrollLeft = carousel.current.offsetWidth * currentIndex;
-    }
-  }, [currentIndex]);
-
-  // Return null for invalid or empty carouselCards
-  if (!isValidCarousel) return null;
-
   return (
-    <div className="w-11/12 h-64 md:h-48 flex flex-col mt-10 md:mt-5">
-      <div className="flex items-center justify-between w-full">
-        <h3 className="font-bold text-xl pl-4 p-5">What's on your mind?</h3>
-        <div className="flex gap-4">
-          <CarouselBtn
+    <div className="w-full relative overflow-hidden p-6" >
+      {/* Carousel Header */}
+      <div className="flex justify-between items-center mb-4 px-4">
+        <h2 className="text-2xl  font-bold">What's on your mind?</h2>
+        <div className="flex space-x-4">
+          <button
             onClick={movePrev}
             disabled={currentIndex === 0}
-            icon={faArrowLeft}
-          />
-          <CarouselBtn
+            className={`h-10 w-10 rounded-full bg-gray-800 text-white flex items-center justify-center ${
+              currentIndex === 0 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-700"
+            }`}
+          >
+            <FontAwesomeIcon icon={faArrowLeft} />
+          </button>
+          <button
             onClick={moveNext}
             disabled={currentIndex >= maxIndex}
-            icon={faArrowRight}
-          />
+            className={`h-10 w-10 rounded-full bg-gray-800 text-white flex items-center justify-center ${
+              currentIndex >= maxIndex ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-700"
+            }`}
+          >
+            <FontAwesomeIcon icon={faArrowRight} />
+          </button>
         </div>
       </div>
-      <div className="w-full h-52 md:h-48 relative overflow-hidden">
+
+      {/* Carousel Content */}
+      <div
+        ref={carouselRef}
+        className="flex gap-12 overflow-x-hidden scroll-smooth"
+      >
+        {carouselCards.map((card) => (
         <div
-          ref={carousel}
-          className="h-full md:h-auto pl-5 flex gap-8 md:gap-2 overflow-hidden scroll-smooth"
-        >
-          {carouselCards.map((carouselCard) => (
-            <img
-              key={carouselCard.id}
-              className="object-center h-full w-52 md:w-24 md:h-[65%] transition-transform hover:scale-110 duration-200 mix-blend-multiply cursor-pointer"
-              src={ITEM_IMG_CDN_URL + carouselCard.imageId}
-              alt="card img"
-            />
-          ))}
-        </div>
+        key={card.id}
+        className="flex-shrink-0 w-44 h-44 bg-gray-100 flex flex-col items-center justify-center rounded-md overflow-hidden shadow-md transition-transform hover:scale-105 duration-300"
+      >
+        <img
+          src={`${ITEM_IMG_CDN_URL}${card.imageId}`} // Using CDN URL with `imageId`
+          alt="carousel"
+          className="w-36 h-36 object-contain bg-white rounded-full border-2 border-gray-300 shadow-sm"
+        />
+        
+      </div>
+      
+      
+        ))}
       </div>
     </div>
   );
